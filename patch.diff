@@ -1,8 +1,8 @@
 diff --git a/3rdparty/CMakeLists.txt b/3rdparty/CMakeLists.txt
-index 9327a5d..131d8a6 100644
+index 9327a5d..154331f 100644
 --- a/3rdparty/CMakeLists.txt
 +++ b/3rdparty/CMakeLists.txt
-@@ -114,3 +114,57 @@ add_subdirectory( ext_frameworks )
+@@ -114,3 +114,44 @@ add_subdirectory( ext_frameworks )
  if (MSVC)
      add_subdirectory( google-breakpad )
  endif()
@@ -23,30 +23,17 @@ index 9327a5d..131d8a6 100644
 +			endif()
 +			message(STATUS "Unpack ${ex_NAME}...")
 +			execute_process(
-+				COMMAND "${INSTALL_ROOT}/bin/7z" x "-o${INSTALL_ROOT}" "${EXTERNALS_DOWNLOAD_DIR}/${ex_NAME}"
-+				RESULT_VARIABLE 7z_extract_success
++				COMMAND "${CMAKE_COMMAND}" -E tar xf "${EXTERNALS_DOWNLOAD_DIR}/${ex_NAME}"
++				WORKING_DIRECTORY "${INSTALL_ROOT}"
++				RESULT_VARIABLE extract_success
 +			)
-+			if(NOT ${7z_extract_success} EQUAL 0)
++			if(NOT ${extract_success} EQUAL 0)
 +				message(FATAL_ERROR "${ex_NAME} unpack failed")
 +			endif()
 +			file(WRITE "${INSTALL_ROOT}/${ex_NAME}.installed" "installed")
 +		endif()
 +		message(STATUS "Install ${ex_NAME} success")
 +	endfunction()
-+
-+	if(NOT EXISTS "${INSTALL_ROOT}/bin/7z.exe")
-+		message(STATUS "Install 7-Zip")
-+		if(NOT EXISTS "${EXTERNALS_DOWNLOAD_DIR}/7z.exe")
-+			file(DOWNLOAD "https://dl.dropboxusercontent.com/u/48731753/dev/kde/krita-depending/7z-b901b582.exe" "${EXTERNALS_DOWNLOAD_DIR}/7z.exe")
-+		endif()
-+		file(MD5 "${EXTERNALS_DOWNLOAD_DIR}/7z.exe" check_md5_value)
-+		if(NOT ${check_md5_value} STREQUAL "b901b5827b78bf9608b9970abb88d276")
-+			message(FATAL_ERROR "7z.exe hash check failed")
-+		else()
-+			file(COPY "${EXTERNALS_DOWNLOAD_DIR}/7z.exe" DESTINATION "${INSTALL_ROOT}/bin/")
-+		endif()
-+		message(STATUS "Install 7-Zip success")
-+	endif()
 +
 +	install_ex_dependencies(
 +		"VC.zip"
