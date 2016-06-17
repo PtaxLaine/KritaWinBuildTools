@@ -1,0 +1,107 @@
+diff --git a/3rdparty/CMakeLists.txt b/3rdparty/CMakeLists.txt
+index 9327a5d..131d8a6 100644
+--- a/3rdparty/CMakeLists.txt
++++ b/3rdparty/CMakeLists.txt
+@@ -114,3 +114,57 @@ add_subdirectory( ext_frameworks )
+ if (MSVC)
+     add_subdirectory( google-breakpad )
+ endif()
++
++if (MSVC)
++	function(install_ex_dependencies ex_NAME ex_URL ex_HASH)
++		message(STATUS "Install ${ex_NAME}...")
++		if(NOT EXISTS "${INSTALL_ROOT}/${ex_NAME}.installed")
++			if(NOT EXISTS "${EXTERNALS_DOWNLOAD_DIR}/${ex_NAME}")
++				message(STATUS "Downloading ${ex_URL}...")
++				file(DOWNLOAD "${ex_URL}" "${EXTERNALS_DOWNLOAD_DIR}/${ex_NAME}")
++				message(STATUS "Downloading success")
++			endif()
++			message(STATUS "Check signature ${ex_NAME}...")
++			file(MD5 "${EXTERNALS_DOWNLOAD_DIR}/${ex_NAME}" check_md5_value)
++			if(NOT "${check_md5_value}" STREQUAL "${ex_HASH}")
++				message(FATAL_ERROR "${ex_NAME} hash check failed")
++			endif()
++			message(STATUS "Unpack ${ex_NAME}...")
++			execute_process(
++				COMMAND "${INSTALL_ROOT}/bin/7z" x "-o${INSTALL_ROOT}" "${EXTERNALS_DOWNLOAD_DIR}/${ex_NAME}"
++				RESULT_VARIABLE 7z_extract_success
++			)
++			if(NOT ${7z_extract_success} EQUAL 0)
++				message(FATAL_ERROR "${ex_NAME} unpack failed")
++			endif()
++			file(WRITE "${INSTALL_ROOT}/${ex_NAME}.installed" "installed")
++		endif()
++		message(STATUS "Install ${ex_NAME} success")
++	endfunction()
++
++	if(NOT EXISTS "${INSTALL_ROOT}/bin/7z.exe")
++		message(STATUS "Install 7-Zip")
++		if(NOT EXISTS "${EXTERNALS_DOWNLOAD_DIR}/7z.exe")
++			file(DOWNLOAD "https://dl.dropboxusercontent.com/u/48731753/dev/kde/krita-depending/7z-b901b582.exe" "${EXTERNALS_DOWNLOAD_DIR}/7z.exe")
++		endif()
++		file(MD5 "${EXTERNALS_DOWNLOAD_DIR}/7z.exe" check_md5_value)
++		if(NOT ${check_md5_value} STREQUAL "b901b5827b78bf9608b9970abb88d276")
++			message(FATAL_ERROR "7z.exe hash check failed")
++		else()
++			file(COPY "${EXTERNALS_DOWNLOAD_DIR}/7z.exe" DESTINATION "${INSTALL_ROOT}/bin/")
++		endif()
++		message(STATUS "Install 7-Zip success")
++	endif()
++
++	install_ex_dependencies(
++		"VC.zip"
++		"https://dl.dropboxusercontent.com/u/48731753/dev/kde/krita-depending/VC-af871ee3.zip"
++		"af871ee3693445aa46635d2dbe0af1c7"
++	)
++	
++	install_ex_dependencies(
++		"gettext-shared-64.zip"
++		"https://dl.dropboxusercontent.com/u/48731753/dev/kde/krita-depending/gettext-shared-64-ab53e6a7.zip"
++		"ab53e6a78f0a8f5ee8791f2539d38e0f"
++	)
++endif()
+diff --git a/3rdparty/ext_boost/CMakeLists.txt b/3rdparty/ext_boost/CMakeLists.txt
+index 277780c..fd49d2d 100755
+--- a/3rdparty/ext_boost/CMakeLists.txt
++++ b/3rdparty/ext_boost/CMakeLists.txt
+@@ -4,8 +4,8 @@ if (MSVC)
+ 		ExternalProject_Add(
+ 			ext_boost
+ 			DOWNLOAD_DIR ${EXTERNALS_DOWNLOAD_DIR}
+-			URL http://files.kde.org/krita/build/dependencies/boost_1_55_0.zip
+-			URL_MD5 8aca361a4713a1f491b0a5e33fee0f1f
++			URL https://dl.dropboxusercontent.com/u/48731753/dev/kde/krita-depending/boost_1_55_0-40054ea0.zip
++			URL_MD5 40054ea04e12addf9ec47713ba201d36
+ 
+ 			CONFIGURE_COMMAND <SOURCE_DIR>/bootstrap.bat --prefix=${PREFIX_ext_boost}
+ 			BUILD_COMMAND <SOURCE_DIR>/b2.exe --with-system --build-dir=build-dir --prefix=${PREFIX_ext_boost} toolset=msvc-14.0 variant=release link=shared  threading=multi architecture=x86 address-model=64 variant=release install
+@@ -27,8 +27,8 @@ if (MSVC)
+ 			ext_boost
+ 
+ 			DOWNLOAD_DIR ${EXTERNALS_DOWNLOAD_DIR}
+-			URL http://files.kde.org/krita/build/dependencies/boost_1_55_0.zip
+-			URL_MD5 8aca361a4713a1f491b0a5e33fee0f1f
++			URL https://dl.dropboxusercontent.com/u/48731753/dev/kde/krita-depending/boost_1_55_0-40054ea0.zip
++			URL_MD5 40054ea04e12addf9ec47713ba201d36
+ 
+ 			CONFIGURE_COMMAND <SOURCE_DIR>/bootstrap.bat --prefix=${PREFIX_ext_boost}
+ 			BUILD_COMMAND <SOURCE_DIR>/b2.exe --with-system --build-dir=build-dir --prefix=${PREFIX_ext_boost} toolset=msvc-14.0 variant=release link=shared  threading=multi architecture=x86 variant=release install
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e392b3f..27d7434 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -7,6 +7,8 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
+ set(MIN_QT_VERSION 5.4.0)
+ set(MIN_FRAMEWORKS_VERSION 5.7.0)
+ 
++include_directories(${ADDITIONAL_INCLUDE_DIR})
++
+ if (POLICY CMP0002)
+     cmake_policy(SET CMP0002 OLD)
+ endif()
+@@ -665,3 +667,5 @@ configure_file(config-ocio.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-ocio.h )
+ 
+ check_function_exists(powf HAVE_POWF)
+ configure_file(config-powf.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-powf.h)
++
++
