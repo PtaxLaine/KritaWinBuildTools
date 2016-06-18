@@ -25,7 +25,7 @@ cmake --build . --config RelWithDebInfo --target ext_gsl && ^
 cmake --build . --config RelWithDebInfo --target ext_libraw && ^
 cmake --build . --config RelWithDebInfo --target ext_openjpeg && ^
 cmake --build . --config RelWithDebInfo --target ext_kwindowsystem && ^
-cmake --build . --config RelWithDebInfo --target ext_freetype rem && ^
+cmake --build . --config RelWithDebInfo --target ext_freetype
 rem cmake --build . --config RelWithDebInfo --target ext_poppler && ^
 rem cmake --build . --config RelWithDebInfo --target ext_vc
 

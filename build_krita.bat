@@ -6,6 +6,8 @@ call build_variables.bat
 
 cd %builder_build%
 
+if not exist "%builder_install%/include/boost" (mklink /J "%builder_install%/include/boost" "%builder_install%/include/boost-1_55/boost")
+
 cmake ..\src -G "Visual Studio 14 Win64" ^
 -DADDITIONAL_INCLUDE_DIR=%builder_install%/include ^
 -DBoost_DEBUG=OFF -DBOOST_INCLUDEDIR=%builder_install%/include/boost-1_55 -DBOOST_DEBUG=ON -DBOOST_ROOT=%builder_install% -DBOOST_LIBRARYDIR=%builder_install%/lib ^
